@@ -20,6 +20,7 @@ RUN pip install --no-cache-dir -r requirements.txt
 COPY app .
 
 ENV INCHI_WS_APP_PORT=8612
+ENV DB_URL="postgresql://rdkit_user:mysecretpassword@db:5432/rdkit_database"
 
 EXPOSE 8612
 

@@ -8,8 +8,8 @@ services:
       - INCHI_WS_APP_PORT=8612
     # volumes:
     #   - ./app:/app
-    depends_on:
-      - db
+    # depends_on:
+    #   - db
   db:
     image: postgres:15
     container_name: inchi_postgres
