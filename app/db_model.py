@@ -1,7 +1,6 @@
 import datetime
 from sqlalchemy import create_engine, Column, Integer, String, ForeignKey, Date, BLOB
-from sqlalchemy.ext.declarative import declarative_base
-from sqlalchemy.orm import sessionmaker
+from sqlalchemy.orm import sessionmaker, declarative_base
 
 
 DB_URL = "postgresql://rdkit_user:mysecretpassword@localhost:5432/rdkit_database"

@@ -6,8 +6,8 @@ services:
       - "8612:8612"
     environment:
       - INCHI_WS_APP_PORT=8612
-    volumes:
-      - ./app:/app
+    # volumes:
+    #   - ./app:/app
     depends_on:
       - db
   db:
@@ -21,11 +21,5 @@ services:
       - "5432:5432"
     volumes:
       - pgdata:/var/lib/postgresql/data
-  build-all:
-    image: busybox
-    depends_on:
-      - app
-      - db
-    command: echo "All services built."
 volumes:
   pgdata:

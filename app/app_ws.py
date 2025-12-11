@@ -11,14 +11,20 @@ from db_model import Issues, get_session
 
 app = FastAPI()
 
-# Token for authentication
-API_TOKEN = os.environ.get("INCHI_API_TOKEN", "mysecrettoken")
+# Load tokens from file
+def load_tokens():
+    token_file = os.environ.get("INCHI_TOKENS_FILE", "tokens.txt")
+    if os.path.exists(token_file):
+        with open(token_file, 'r') as f:
+            return set(line.strip() for line in f if line.strip())
+    return {}
 
-def verify_token(request: Request):
+def verify_token(request: Request):    
     token = request.headers.get("Authorization")
-    if token != f"Bearer {API_TOKEN}":
+    all_tokens = load_tokens()
+    if token not in all_tokens:
         raise Exception("Invalid or missing token")
-
+    
 @app.get("/health")
 async def health_check(request: Request):
     try:
@@ -33,8 +39,7 @@ async def ingest_issue(request: Request, session=Depends(get_session)):
         verify_token(request)
     except Exception as e:
         return JSONResponse(status_code=401, content={"error": str(e)})
-    
-        
+            
     try:
         if request is None:
             raise ValueError
@@ -87,8 +92,8 @@ if __name__ == "__main__":
         "app_ws:app",
         host='0.0.0.0', 
         port=gui_port,     
-        # ssl_keyfile="server.key",
-        # ssl_certfile="server.crt"
+        ssl_keyfile="server.key",
+        ssl_certfile="server.crt"
         # dev_tools_silence_routes_logging=False 
     )
     

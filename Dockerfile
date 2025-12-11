@@ -6,7 +6,9 @@ RUN apt-get update && apt-get install -y gunicorn openssl
 # Set the working directory in the container
 WORKDIR /app
 
-RUN openssl req -newkey rsa:2048 -nodes -keyout server.key -x509 -out server.crt -days 365 -subj "/C=DE/ST=Hessen/L=Frankfurt/O=Beilstein/CN=localhost"
+RUN openssl req -newkey rsa:2048 -nodes -keyout /app/server.key \
+    -x509 -out /app/server.crt -days 365 \
+    -subj "/C=DE/ST=Hessen/L=Frankfurt/O=Beilstein/CN=localhost"
 
 # Copy the requirements file into the container
 COPY requirements.txt .
