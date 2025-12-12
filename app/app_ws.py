@@ -2,16 +2,18 @@
 import os
 import uvicorn
 import logging
+import base64
 
 # from a2wsgi import WSGIMiddleware
 from fastapi import FastAPI, Request, Depends
 from fastapi.responses import JSONResponse
-
-from db_model import Issues, get_session, init_db
+from typing import Optional
+from db_model import Issues, Issue_in, get_session, init_db
+from helper_util import is_base64_encoded
 
 app = FastAPI()
 
-token_check_enabled = True
+token_check_enabled = False
 
 # Load tokens from file
 def load_tokens():
@@ -28,17 +30,14 @@ def verify_token(request: Request):
         raise Exception("Invalid or missing token")
     
 @app.get("/health")
-async def health_check(request: Request):
-    if token_check_enabled:
-        try:
-            verify_token(request)
-        except Exception as e:
-            return JSONResponse(status_code=401, content={"error": str(e)})
-    
-    return JSONResponse(status_code=200, content={"status": "success"})
+async def health_check():
+    try:
+        return JSONResponse(status_code=200, content={"status": "success"})
+    except Exception as ex:
+        return JSONResponse(status_code=500, content={"db_status": "error", "details": str(ex)})
 
 @app.get("/db_check")
-async def db_check(request: Request):
+async def db_check():
     try:
         # Try to get a session and execute a simple query
         db_check_status, error_messge = Issues.check_connection()
@@ -46,11 +45,11 @@ async def db_check(request: Request):
             return JSONResponse(status_code=200, content={"db_status": "connected"})
         else:
             return JSONResponse(status_code=500, content={"db_status": "error", "details": error_messge})    
-    except Exception as e:
-        return JSONResponse(status_code=500, content={"db_status": "error", "details": str(e)})
+    except Exception as ex:
+        return JSONResponse(status_code=500, content={"db_status": "error", "details": str(ex)})
 
 @app.post("/ingest_issue")
-async def ingest_issue(request: Request, session=Depends(get_session)):
+async def ingest_issue(issue: Issue_in, request: Request, session=Depends(get_session)):
     if token_check_enabled:
         try:
             verify_token(request)
@@ -58,23 +57,45 @@ async def ingest_issue(request: Request, session=Depends(get_session)):
             return JSONResponse(status_code=401, content={"error": str(e)})
             
     try:
-        if request is None:
-            raise ValueError
-        data = await request.json()    
-        issue = Issues.add(session, **data)
-        return JSONResponse(content={"status": "success", "issue_id": issue.id})
+        data = issue.model_dump(exclude_unset=True)
+        if "molfile" in data and data["molfile"] is not None:
+            if isinstance(data["molfile"], str):
+                # If it's a plain string (not base64), encode to bytes and then base64 encode
+                try:
+                    if is_base64_encoded(data["molfile"]):
+                        data["molfile"] = data["molfile"].encode('utf-8')
+                    else:
+                        print("is string: encoding", data["molfile"])
+                        data["molfile"] = base64.b64encode(data["molfile"].encode('utf-8'))
+
+                    # Try to decode as base64 first (if already encoded, this will succeed)
+                    # print("test1", data["molfile"])
+                    # print("test2", data["molfile"].encode('utf-8'))
+                    # print("test3", base64.b64decode(data["molfile"]))
+                    # print("test4", base64.b64encode(data["molfile"].encode('utf-8')))
+                    # print("test5", base64.b64encode(data["molfile"].encode('utf-8')).decode('utf-8'))
+                    # print("test6", is_base64_encoded(data["molfile"]))
+                    # # base64.b64decode(data["molfile"])
+                    # print("test5")
+                except Exception:
+                    # If decoding fails, treat as plain string and encode
+                    # data["molfile"] = base64.b64encode(data["molfile"].encode('utf-8'))
+                    print("failed")
+
+        issue_obj = Issues.add(session, **data)
+        return JSONResponse(content={"status": "success", "issue_id": issue_obj.id})
+                        
     except ValueError as ve:
         try:
             example_str = Issues.example_json()
         except Exception as ex2:
-            print("shit")
-
+            example_str = ""
         return JSONResponse(status_code=400, content={"error": str(ve) + " example: " + example_str})
     except Exception as e:
         return JSONResponse(status_code=500, content={"error": str(e)})
 
 @app.get("/get_nof_issues")
-async def get_issues(request: Request, session=Depends(get_session)):
+async def get_nof_issues(request: Request, session=Depends(get_session)):
 
     if token_check_enabled:
         try:
@@ -87,7 +108,7 @@ async def get_issues(request: Request, session=Depends(get_session)):
     return JSONResponse(content={"nof_issues": nof_issues})
 
 @app.get("/get_all_issues")
-async def get_issues(request: Request, session=Depends(get_session)):
+async def get_all_issues(request: Request, get_molfile_as_string : Optional[bool] = False, session=Depends(get_session)):
     
     if token_check_enabled:
         try:
@@ -96,23 +117,9 @@ async def get_issues(request: Request, session=Depends(get_session)):
             return JSONResponse(status_code=401, content={"error": str(e)})
     
     issues = Issues.get_all_sorted_by_date(session)
-    # Convert SQLAlchemy objects to dicts
-    result = [
-        {
-            "id": issue.id,
-            "user": issue.user,
-            "description": issue.description,
-            "date_created": str(issue.date_created),
-            "molfile": issue.molfile,
-            "inchi": issue.inchi,
-            "auxinfo": issue.auxinfo,
-            "inchikey": issue.inchikey,
-            "logs": issue.logs,
-            "options": issue.options,
-            "inchi_version": issue.inchi_version
-        }
-        for issue in issues
-    ]
+    
+    result = [Issues.to_dict(issue, get_molfile_as_string) for issue in issues]
+
     return JSONResponse(content={"issues": result})
 
 if __name__ == "__main__":    
