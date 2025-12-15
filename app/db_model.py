@@ -36,7 +36,7 @@ def init_db():
 class Issue_in(BaseModel):
     user: Optional[str] = None
     description: Optional[str] = None
-    molfile: Optional[str] = None  # base64-encoded or hex string
+    molfile: Optional[str] = None  # base64-encoded 
     inchi: Optional[str] = None
     auxinfo: Optional[str] = None
     inchikey: Optional[str] = None

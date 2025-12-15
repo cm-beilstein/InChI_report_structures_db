@@ -13,7 +13,7 @@ from helper_util import is_base64_encoded
 
 app = FastAPI()
 
-token_check_enabled = False
+token_check_enabled = True
 
 # Load tokens from file
 def load_tokens():
