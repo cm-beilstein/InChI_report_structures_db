@@ -10,7 +10,7 @@ from typing import Optional
 Base = declarative_base()
 
 def get_db_url():
-    return os.environ.get("DB_URL", "postgresql://rdkit_user:mysecretpassword@localhost:5432/rdkit_database")
+    return os.environ.get("DB_URL", "postgresql://rdkit_user:mysecretpassword@localhost:5432/inchi_database")
 
 def get_engine():
     return create_engine(get_db_url())

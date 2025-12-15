@@ -1,2 +1,2 @@
-mytoken1
-mytoken2
+my_inchi_token1
+my_inchi_token2
