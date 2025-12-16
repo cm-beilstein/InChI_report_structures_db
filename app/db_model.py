@@ -79,7 +79,7 @@ class Issues(Base):
     @classmethod
     def check_connection(cls):
         try:
-            engine = create_engine(get_db_url())
+            engine = get_engine()
             with engine.connect() as conn:
                 conn.execute(text("SELECT 1"))
             return True, ""

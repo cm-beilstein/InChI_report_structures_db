@@ -17,7 +17,7 @@ token_check_enabled = True
 
 # Load tokens from file
 def load_tokens():
-    token_file = os.environ.get("INCHI_TOKENS_FILE", "tokens.txt")
+    token_file = os.environ.get("INCHI_TOKENS_FILE")
     if os.path.exists(token_file):
         with open(token_file, 'r') as f:
             return set(line.strip() for line in f if line.strip())
@@ -27,7 +27,6 @@ def is_token_valid(token: str):
     all_tokens = load_tokens()
     return token in all_tokens
         
-    
 @app.get("/health")
 async def health_check():
     try:

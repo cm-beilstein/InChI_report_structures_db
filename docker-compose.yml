@@ -2,11 +2,12 @@ services:
   app:
     build: .
     container_name: inchi_app
-    network_mode: "host"
+    # network_mode: "host"
     ports:
       - "8612:8612"
     environment:
       - INCHI_WS_APP_PORT=8612
+      - INCHI_TOKENS_FILE=tokens.txt
     env_file:
       - db_con.env
     # volumes:
