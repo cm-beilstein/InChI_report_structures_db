@@ -12,6 +12,7 @@ RUN openssl req -newkey rsa:2048 -nodes -keyout /app/server.key \
 
 # Copy the requirements file into the container
 COPY requirements.txt .
+COPY db_con.env .
 
 # Install any needed packages specified in requirements.txt
 RUN pip install --no-cache-dir -r requirements.txt
@@ -20,8 +21,6 @@ RUN pip install --no-cache-dir -r requirements.txt
 COPY app .
 
 ENV INCHI_WS_APP_PORT=8612
-# ENV DB_URL="postgresql://rdkit_user:mysecretpassword@db:5432/inchi_database"
-ENV DB_URL="postgresql://inchi_user:inchiChemInfo123!@localhost:5432/inchi_database"
 
 EXPOSE 8612
 

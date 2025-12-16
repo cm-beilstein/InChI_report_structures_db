@@ -6,14 +6,13 @@ from sqlalchemy import create_engine, Column, Integer, String, ForeignKey, DateT
 from sqlalchemy.orm import sessionmaker, declarative_base
 from pydantic import BaseModel
 from typing import Optional
+from config import settings
 
 Base = declarative_base()
 
-def get_db_url():
-    return os.environ.get("DB_URL", "postgresql://rdkit_user:mysecretpassword@localhost:5432/inchi_database")
 
-def get_engine():
-    return create_engine(get_db_url())
+def get_engine():    
+    return create_engine(settings.database_url)
 
 def get_session():
     engine = get_engine()
