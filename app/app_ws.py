@@ -23,11 +23,10 @@ def load_tokens():
             return set(line.strip() for line in f if line.strip())
     return {}
 
-def verify_token(request: Request):    
-    token = request.headers.get("Authorization")
+def is_token_valid(token: str):
     all_tokens = load_tokens()
-    if token not in all_tokens:
-        raise Exception("Invalid or missing token")
+    return token in all_tokens
+        
     
 @app.get("/health")
 async def health_check():
@@ -37,7 +36,12 @@ async def health_check():
         return JSONResponse(status_code=500, content={"db_status": "error", "details": str(ex)})
 
 @app.get("/db_check")
-async def db_check():
+async def db_check(token: str):
+    
+    if token_check_enabled:
+        if not is_token_valid(token):
+            return JSONResponse(status_code=401, content={"error": 'Token invalid or missing'})
+            
     try:
         # Try to get a session and execute a simple query
         db_check_status, error_messge = Issues.check_connection()
@@ -49,12 +53,10 @@ async def db_check():
         return JSONResponse(status_code=500, content={"db_status": "error", "details": str(ex)})
 
 @app.post("/ingest_issue")
-async def ingest_issue(issue: Issue_in, request: Request, session=Depends(get_session)):
+async def ingest_issue(token: str, issue: Issue_in, request: Request, session=Depends(get_session)):
     if token_check_enabled:
-        try:
-            verify_token(request)
-        except Exception as e:
-            return JSONResponse(status_code=401, content={"error": str(e)})
+        if not is_token_valid(token):
+            return JSONResponse(status_code=401, content={"error": 'Token invalid or missing'})
             
     try:
         data = issue.model_dump(exclude_unset=True)
@@ -95,26 +97,22 @@ async def ingest_issue(issue: Issue_in, request: Request, session=Depends(get_se
         return JSONResponse(status_code=500, content={"error": str(e)})
 
 @app.get("/get_nof_issues")
-async def get_nof_issues(request: Request, session=Depends(get_session)):
+async def get_nof_issues(token: str, session=Depends(get_session)):
 
     if token_check_enabled:
-        try:
-            verify_token(request)
-        except Exception as e:
-            return JSONResponse(status_code=401, content={"error": str(e)})
+        if not is_token_valid(token):
+            return JSONResponse(status_code=401, content={"error": 'Token invalid or missing'})
 
     nof_issues = Issues.get_nof_issues(session)
 
     return JSONResponse(content={"nof_issues": nof_issues})
 
 @app.get("/get_all_issues")
-async def get_all_issues(request: Request, get_molfile_as_string : Optional[bool] = False, session=Depends(get_session)):
+async def get_all_issues(token: str, get_molfile_as_string : Optional[bool] = False, session=Depends(get_session)):
     
     if token_check_enabled:
-        try:
-            verify_token(request)
-        except Exception as e:
-            return JSONResponse(status_code=401, content={"error": str(e)})
+        if not is_token_valid(token):
+            return JSONResponse(status_code=401, content={"error": 'Token invalid or missing'})
     
     issues = Issues.get_all_sorted_by_date(session)
     
