@@ -2,6 +2,7 @@ services:
   app:
     build: .
     container_name: inchi_app
+    network_mode: "host"
     ports:
       - "8612:8612"
     environment:
@@ -10,8 +11,13 @@ services:
       - db_con.env
     # volumes:
     #   - ./app:/app
-    # depends_on:
+    depends_on:
     #   - db
+      - wait-for-postgres
+  wait-for-postgres:
+    image: appropriate/wait-for-it:latest
+    command: ["localhost:5432", "--", "echo", "PostgreSQL on host is ready!"]
+    network_mode: "host"
   db:
     image: postgres:15
     container_name: inchi_postgres
