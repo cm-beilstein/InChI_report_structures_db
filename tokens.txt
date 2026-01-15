@@ -1,2 +1,13 @@
-JchSKSAoUUjKXriWdcUlb2a3hIvIgdPs
-Ngr80SfYjUIV4TRR8p6G8guYvWk6velE
+
+{
+    "JchSKSAoUUjKXriWdcUlb2a3hIvIgdPs": [
+        "ingest_issue"
+    ],
+    "Ngr80SfYjUIV4TRR8p6G8guYvWk6velE": [
+        "all"
+    ],
+    "Ngr80SfYjUIV4TRR8p6G8guYvWk6234lE" [
+        "db_check"
+    ]
+}
+

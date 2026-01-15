@@ -2,7 +2,8 @@
 import os
 import uvicorn
 import logging
-import base64
+import json
+import inspect
 
 # from a2wsgi import WSGIMiddleware
 from fastapi import FastAPI, Request, Depends
@@ -20,12 +21,20 @@ def load_tokens():
     token_file = os.environ.get("INCHI_TOKENS_FILE")
     if os.path.exists(token_file):
         with open(token_file, 'r') as f:
-            return set(line.strip() for line in f if line.strip())
+            return json.load(f)
     return {}
 
-def is_token_valid(token: str):
-    all_tokens = load_tokens()
-    return token in all_tokens
+def is_token_valid(token: str, used_function: str):
+            
+    all_tokens_dict = load_tokens()
+    
+    allowed_functions = all_tokens_dict.get(token, [])
+    if "all" in allowed_functions:
+        return True
+    elif used_function in allowed_functions:
+        return True
+        
+    return False
         
 @app.get("/health")
 async def health_check():
@@ -38,7 +47,7 @@ async def health_check():
 async def db_check(token: str):
     
     if token_check_enabled:
-        if not is_token_valid(token):
+        if not is_token_valid(token, inspect.currentframe().f_code.co_name):
             return JSONResponse(status_code=401, content={"error": 'Token invalid or missing'})
             
     try:
@@ -54,34 +63,11 @@ async def db_check(token: str):
 @app.post("/ingest_issue")
 async def ingest_issue(token: str, issue: Issue_in, request: Request, session=Depends(get_session)):
     if token_check_enabled:
-        if not is_token_valid(token):
+        if not is_token_valid(token, inspect.currentframe().f_code.co_name):
             return JSONResponse(status_code=401, content={"error": 'Token invalid or missing'})
             
     try:
         data = issue.model_dump(exclude_unset=True)
-        if "molfile" in data and data["molfile"] is not None:
-            if isinstance(data["molfile"], str):
-                # If it's a plain string (not base64), encode to bytes and then base64 encode
-                try:
-                    if is_base64_encoded(data["molfile"]):
-                        data["molfile"] = data["molfile"].encode('utf-8')
-                    else:
-                        print("is string: encoding", data["molfile"])
-                        data["molfile"] = base64.b64encode(data["molfile"].encode('utf-8'))
-
-                    # Try to decode as base64 first (if already encoded, this will succeed)
-                    # print("test1", data["molfile"])
-                    # print("test2", data["molfile"].encode('utf-8'))
-                    # print("test3", base64.b64decode(data["molfile"]))
-                    # print("test4", base64.b64encode(data["molfile"].encode('utf-8')))
-                    # print("test5", base64.b64encode(data["molfile"].encode('utf-8')).decode('utf-8'))
-                    # print("test6", is_base64_encoded(data["molfile"]))
-                    # # base64.b64decode(data["molfile"])
-                    # print("test5")
-                except Exception:
-                    # If decoding fails, treat as plain string and encode
-                    # data["molfile"] = base64.b64encode(data["molfile"].encode('utf-8'))
-                    print("failed")
 
         issue_obj = Issues.add(session, **data)
         return JSONResponse(content={"status": "success", "issue_id": issue_obj.id})
@@ -99,7 +85,7 @@ async def ingest_issue(token: str, issue: Issue_in, request: Request, session=De
 async def get_nof_issues(token: str, session=Depends(get_session)):
 
     if token_check_enabled:
-        if not is_token_valid(token):
+        if not is_token_valid(token, inspect.currentframe().f_code.co_name):
             return JSONResponse(status_code=401, content={"error": 'Token invalid or missing'})
 
     nof_issues = Issues.get_nof_issues(session)
@@ -110,7 +96,7 @@ async def get_nof_issues(token: str, session=Depends(get_session)):
 async def get_all_issues(token: str, get_molfile_as_string : Optional[bool] = False, session=Depends(get_session)):
     
     if token_check_enabled:
-        if not is_token_valid(token):
+        if not is_token_valid(token, inspect.currentframe().f_code.co_name):
             return JSONResponse(status_code=401, content={"error": 'Token invalid or missing'})
     
     issues = Issues.get_all_sorted_by_date(session)

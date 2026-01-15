@@ -1,7 +1,6 @@
 import os
 import datetime
 import json
-import base64
 from sqlalchemy import create_engine, Column, Integer, String, ForeignKey, DateTime, LargeBinary, text
 from sqlalchemy.orm import sessionmaker, declarative_base
 from pydantic import BaseModel
@@ -65,9 +64,10 @@ class Issues(Base):
     user = Column(String(50), nullable=True)
     description = Column(String(2000), nullable=True)
     date_created = Column(DateTime, default=datetime.datetime.now)    
-    molfile = Column(LargeBinary, nullable=True) 
-    inchi  = Column(String(1000), nullable=True)
-    auxinfo  = Column(String(2000), nullable=True)
+    molfile = Column(String(10000), nullable=True)     
+    inchi  = Column(String(2000), nullable=True)
+    auxinfo  = Column(String(4000), nullable=True)
+    input_source = Column(String(500), nullable=True)
     inchikey = Column(String(20), nullable=True) 
     logs  = Column(String(2000), nullable=True) 
     options  = Column(String(2000), nullable=True) 
@@ -125,28 +125,14 @@ class Issues(Base):
         return session.query(cls).count()
     
     @classmethod
-    def to_dict(cls, issue, get_molfile_as_string):
-
-        molfile = None
-        if issue.molfile:             
-
-            try:
-                if get_molfile_as_string:
-                    try:                    
-                        molfile = base64.b64decode(issue.molfile).decode("utf-8") 
-                    except Exception as ex:
-                        molfile = issue.molfile.decode("utf-8") 
-                else:
-                    molfile = issue.molfile.decode("utf-8") 
-            except Exception as ex2:
-                print("ERROR", str(ex2))
+    def to_dict(cls, issue):
 
         data = {
             "id": issue.id,
             "user": issue.user,
             "description": issue.description,
             "date_created": str(issue.date_created) if issue.date_created else None,
-            "molfile": molfile,
+            "molfile": issue.molfile,
             "inchi": issue.inchi,
             "auxinfo": issue.auxinfo,
             "inchikey": issue.inchikey,
