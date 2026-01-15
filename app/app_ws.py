@@ -93,7 +93,7 @@ async def get_nof_issues(token: str, session=Depends(get_session)):
     return JSONResponse(content={"nof_issues": nof_issues})
 
 @app.get("/get_all_issues")
-async def get_all_issues(token: str, get_molfile_as_string : Optional[bool] = False, session=Depends(get_session)):
+async def get_all_issues(token: str, session=Depends(get_session)):
     
     if token_check_enabled:
         if not is_token_valid(token, inspect.currentframe().f_code.co_name):
@@ -101,7 +101,7 @@ async def get_all_issues(token: str, get_molfile_as_string : Optional[bool] = Fa
     
     issues = Issues.get_all_sorted_by_date(session)
     
-    result = [Issues.to_dict(issue, get_molfile_as_string) for issue in issues]
+    result = [Issues.to_dict(issue) for issue in issues]
 
     return JSONResponse(content={"issues": result})
 

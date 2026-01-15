@@ -6,7 +6,7 @@
     "Ngr80SfYjUIV4TRR8p6G8guYvWk6velE": [
         "all"
     ],
-    "Ngr80SfYjUIV4TRR8p6G8guYvWk6234lE" [
+    "Ngr80SfYjUIV4TRR8p6G8guYvWk6234lE": [
         "db_check"
     ]
 }
