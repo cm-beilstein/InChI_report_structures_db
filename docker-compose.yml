@@ -12,6 +12,7 @@ services:
       - db_con.env
     volumes:
       - ./tokens.txt:/tokens/tokens.txt
+      - ./logs:/app/logs
     #   - ./app:/app
     # depends_on:
     #   - db

@@ -117,7 +117,7 @@ async def get_all_issues(token: str, session=Depends(get_session)):
 if __name__ == "__main__":    
     logging.basicConfig(
         level=logging.INFO,
-        filename="app.log",  # Log file path
+        filename="/app/logs/app.log",  # Log file path
         filemode="a",        # Append mode
         format="%(asctime)s %(levelname)s %(name)s %(message)s"        
     )
