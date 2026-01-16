@@ -41,6 +41,7 @@ class Issue_in(BaseModel):
     logs: Optional[str] = None
     options: Optional[str] = None
     inchi_version: Optional[str] = None
+    input_source: Optional[str] = None
 
 class IssueOut(BaseModel):
     id: int
@@ -54,6 +55,7 @@ class IssueOut(BaseModel):
     logs: Optional[str]
     options: Optional[str]
     inchi_version: Optional[str]
+    input_source: Optional[str]
 
     class Config:
         orm_mode = True
@@ -100,7 +102,8 @@ class Issues(Base):
             "inchikey": "EXAMPLEINCHIKEY",
             "logs": "Example logs",
             "options": "Example options",
-            "inchi_version": "1.05"
+            "inchi_version": "1.05",
+            "input_source": "inchi_web_demo"
         }
         return json.dumps(example, indent=2)
 
@@ -138,6 +141,7 @@ class Issues(Base):
             "inchikey": issue.inchikey,
             "logs": issue.logs,
             "options": issue.options,
-            "inchi_version": issue.inchi_version
+            "inchi_version": issue.inchi_version,
+            "input_source": issue.input_source
         }
         return data    
