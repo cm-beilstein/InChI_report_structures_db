@@ -7,10 +7,11 @@ services:
       - "8612:8612"
     environment:
       - INCHI_WS_APP_PORT=8612
-      - INCHI_TOKENS_FILE=tokens.txt
+      - INCHI_TOKENS_FILE=/tokens/tokens.txt
     env_file:
       - db_con.env
-    # volumes:
+    volumes:
+      - ./tokens.txt:/tokens/tokens.txt
     #   - ./app:/app
     # depends_on:
     #   - db

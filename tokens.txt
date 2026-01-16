@@ -8,6 +8,9 @@
     ],
     "Ngr80SfYjUIV4TRR8p6G8guYvWk6234lE": [
         "db_check"
+    ],
+    "hello": [
+        "db_check"
     ]
 }
 

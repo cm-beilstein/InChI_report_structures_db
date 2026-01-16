@@ -13,7 +13,7 @@ RUN openssl req -newkey rsa:2048 -nodes -keyout /app/server.key \
 # Copy the requirements file into the container
 COPY requirements.txt .
 COPY db_con.env .
-COPY tokens.txt .
+# COPY tokens.txt .
 
 # Install any needed packages specified in requirements.txt
 RUN pip install --no-cache-dir -r requirements.txt
