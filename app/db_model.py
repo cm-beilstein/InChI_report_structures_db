@@ -70,7 +70,7 @@ class Issues(Base):
     inchi  = Column(String(2000), nullable=True)
     auxinfo  = Column(String(4000), nullable=True)
     input_source = Column(String(500), nullable=True)
-    inchikey = Column(String(20), nullable=True) 
+    inchikey = Column(String(50), nullable=True) 
     logs  = Column(String(2000), nullable=True) 
     options  = Column(String(2000), nullable=True) 
     inchi_version  = Column(String(255), nullable=True)     
