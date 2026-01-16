@@ -8,11 +8,20 @@ import inspect
 # from a2wsgi import WSGIMiddleware
 from fastapi import FastAPI, Request, Depends
 from fastapi.responses import JSONResponse
-from typing import Optional
 from db_model import Issues, Issue_in, get_session, init_db
-from helper_util import is_base64_encoded
+from starlette.middleware.base import BaseHTTPMiddleware
 
 app = FastAPI()
+
+class LoggingMiddleware(BaseHTTPMiddleware):
+    async def dispatch(self, request, call_next):
+        logger = logging.getLogger("app.access")
+        logger.info(f"Request: {request.method} {request.url.path}")
+        response = await call_next(request)
+        logger.info(f"Response: {request.method} {request.url.path} - Status {response.status_code}")
+        return response
+
+app.add_middleware(LoggingMiddleware)
 
 token_check_enabled = True
 
@@ -106,7 +115,12 @@ async def get_all_issues(token: str, session=Depends(get_session)):
     return JSONResponse(content={"issues": result})
 
 if __name__ == "__main__":    
-    logging.basicConfig(level=logging.INFO)
+    logging.basicConfig(
+        level=logging.INFO,
+        filename="app.log",  # Log file path
+        filemode="a",        # Append mode
+        format="%(asctime)s %(levelname)s %(name)s %(message)s"        
+    )
     
     log = logging.getLogger(__name__)
     log.setLevel(logging.INFO)
