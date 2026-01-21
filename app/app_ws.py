@@ -7,6 +7,7 @@ import inspect
 
 # from a2wsgi import WSGIMiddleware
 from fastapi import FastAPI, Request, Depends
+from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 from db_model import Issues, Issue_in, get_session, init_db
 from starlette.middleware.base import BaseHTTPMiddleware
@@ -22,6 +23,14 @@ class LoggingMiddleware(BaseHTTPMiddleware):
         return response
 
 app.add_middleware(LoggingMiddleware)
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],  # Or specify your frontend URL
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 token_check_enabled = True
 
