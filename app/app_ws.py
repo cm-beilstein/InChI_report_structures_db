@@ -132,8 +132,8 @@ if __name__ == "__main__":
             "app_ws:app",
             host='0.0.0.0', 
             port=gui_port,     
-            ssl_keyfile="server.key",
-            ssl_certfile="server.crt"
+            # ssl_keyfile="server.key",
+            # ssl_certfile="server.crt"
             # dev_tools_silence_routes_logging=False 
         )
     else:
