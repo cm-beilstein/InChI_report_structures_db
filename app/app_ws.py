@@ -14,6 +14,9 @@ from starlette.middleware.base import BaseHTTPMiddleware
 
 app = FastAPI()
 
+main_app = FastAPI()
+main_app.mount("/report", app)
+
 class LoggingMiddleware(BaseHTTPMiddleware):
     async def dispatch(self, request, call_next):
         logger = logging.getLogger("app.access")
@@ -138,7 +141,7 @@ if __name__ == "__main__":
 
     if init_db():        
         uvicorn.run(
-            "app_ws:app",
+            "app_ws:main_app",
             host='0.0.0.0', 
             port=gui_port,     
             # ssl_keyfile="server.key",
