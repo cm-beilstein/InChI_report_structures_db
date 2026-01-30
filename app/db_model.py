@@ -66,8 +66,7 @@ class IssueOut(BaseModel):
     input_source: Optional[str]
 
     class Config:
-        # from_attributes = True
-        orm_mode = True
+        from_attributes = True
 
 class Issues(Base):
     __tablename__ = 'issues'
