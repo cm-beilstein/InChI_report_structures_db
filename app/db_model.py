@@ -11,7 +11,15 @@ Base = declarative_base()
 
 
 def get_engine():    
-    return create_engine(settings.database_url)
+    
+    engine = None
+    
+    try:
+        engine = create_engine(settings.database_url)
+    except Exception as ex:
+        print("ERROR in get_engine", str(ex))
+        
+    return engine
 
 def get_session():
     engine = get_engine()
