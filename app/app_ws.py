@@ -82,7 +82,7 @@ async def db_check(token: str):
         return JSONResponse(status_code=500, content={"db_status": "error", "details": str(ex)})
 
 @app.post("/ingest_issue")
-async def ingest_issue(token: str, issue: Issue_in, request: Request, session=Depends(get_session)):
+async def ingest_issue(token: str, issue: Issue_in, session=Depends(get_session)):
     if token_check_enabled:
         if not is_token_valid(token, inspect.currentframe().f_code.co_name):
             return JSONResponse(status_code=401, content={"error": 'Token invalid or missing'})
