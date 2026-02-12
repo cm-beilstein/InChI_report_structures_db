@@ -42,7 +42,8 @@ def init_db():
 class Issue_in(BaseModel):
     user: Optional[str] = None
     description: Optional[str] = None
-    molfile: Optional[str] = None  # base64-encoded 
+    molfile_v2: Optional[str] = None
+    molfile_v3: Optional[str] = None
     inchi: Optional[str] = None
     auxinfo: Optional[str] = None
     inchikey: Optional[str] = None
@@ -56,7 +57,8 @@ class IssueOut(BaseModel):
     user: Optional[str]
     description: Optional[str]
     date_created: Optional[str]
-    molfile: Optional[str]
+    molfile_v2: Optional[str]
+    molfile_v3: Optional[str]
     inchi: Optional[str]
     auxinfo: Optional[str]
     inchikey: Optional[str]
@@ -74,7 +76,8 @@ class Issues(Base):
     user = Column(String(50), nullable=True)
     description = Column(String(2000), nullable=True)
     date_created = Column(DateTime, default=datetime.datetime.now)    
-    molfile = Column(String(10000), nullable=True)     
+    molfile_v2 = Column(String(10000), nullable=True)     
+    molfile_v3 = Column(String(10000), nullable=True)
     inchi  = Column(String(2000), nullable=True)
     auxinfo  = Column(String(4000), nullable=True)
     input_source = Column(String(500), nullable=True)
@@ -104,7 +107,8 @@ class Issues(Base):
             "user": "example_user",
             "description": "Example issue description",
             "date_created": "2025-01-01",
-            "molfile": "base64-encoded-molfile or molfile as string",
+            "molfile_v2": "molfile as string",
+            "molfile_v3": "molfile as string",
             "inchi": "InChI=1S/example",
             "auxinfo": "AuxInfo=example",
             "inchikey": "EXAMPLEINCHIKEY",
@@ -143,7 +147,8 @@ class Issues(Base):
             "user": issue.user,
             "description": issue.description,
             "date_created": str(issue.date_created) if issue.date_created else None,
-            "molfile": issue.molfile,
+            "molfile_v2": issue.molfile_v2,
+            "molfile_v3": issue.molfile_v3,
             "inchi": issue.inchi,
             "auxinfo": issue.auxinfo,
             "inchikey": issue.inchikey,
