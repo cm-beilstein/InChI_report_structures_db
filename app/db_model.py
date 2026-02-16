@@ -1,14 +1,13 @@
 import os
 import datetime
 import json
-from sqlalchemy import create_engine, Column, Integer, String, ForeignKey, DateTime, LargeBinary, text
+from sqlalchemy import create_engine, Column, Integer, Boolean, String, ForeignKey, DateTime, LargeBinary, text
 from sqlalchemy.orm import sessionmaker, declarative_base
 from pydantic import BaseModel
 from typing import Optional
 from config import settings
 
 Base = declarative_base()
-
 
 def get_engine():    
     
@@ -39,36 +38,17 @@ def init_db():
         print("ERROR initializing DB", str(ex))
         return False
 
-class Issue_in(BaseModel):
-    user: Optional[str] = None
-    description: Optional[str] = None
-    molfile_v2: Optional[str] = None
-    molfile_v3: Optional[str] = None
-    inchi: Optional[str] = None
-    auxinfo: Optional[str] = None
-    inchikey: Optional[str] = None
-    logs: Optional[str] = None
-    options: Optional[str] = None
-    inchi_version: Optional[str] = None
-    input_source: Optional[str] = None
+class Users(Base):
+    __tablename__ = 'users'
+    id = Column(Integer, primary_key=True)
+    username = Column(String(255), nullable=False)
+    hashed_password = Column(String(255), nullable=False)
+    disabled = Column(Boolean, nullable=False)
+        
+    @classmethod
+    def get_user_by_username(cls, session, username: str):
+        return session.query(cls).filter(cls.username == username).first()
 
-class IssueOut(BaseModel):
-    id: int
-    user: Optional[str]
-    description: Optional[str]
-    date_created: Optional[str]
-    molfile_v2: Optional[str]
-    molfile_v3: Optional[str]
-    inchi: Optional[str]
-    auxinfo: Optional[str]
-    inchikey: Optional[str]
-    logs: Optional[str]
-    options: Optional[str]
-    inchi_version: Optional[str]
-    input_source: Optional[str]
-
-    class Config:
-        from_attributes = True
 
 class Issues(Base):
     __tablename__ = 'issues'
@@ -158,3 +138,17 @@ class Issues(Base):
             "input_source": issue.input_source
         }
         return data    
+
+class Issue_in(BaseModel):
+    user: Optional[str] = None
+    description: Optional[str] = None
+    molfile_v2: Optional[str] = None
+    molfile_v3: Optional[str] = None
+    inchi: Optional[str] = None
+    auxinfo: Optional[str] = None
+    inchikey: Optional[str] = None
+    logs: Optional[str] = None
+    options: Optional[str] = None
+    inchi_version: Optional[str] = None
+    input_source: Optional[str] = None
+    

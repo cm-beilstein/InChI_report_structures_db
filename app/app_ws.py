@@ -6,11 +6,15 @@ import json
 import inspect
 
 # from a2wsgi import WSGIMiddleware
-from fastapi import FastAPI, Request, Depends
+from fastapi import FastAPI, Request, Depends, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
 from fastapi.responses import JSONResponse
 from db_model import Issues, Issue_in, get_session, init_db
+from typing import List
+from helper_authentication import User, Token, ACCESS_TOKEN_EXPIRE_MINUTES, authenticate_user, create_auth_access_token, get_current_user
 from starlette.middleware.base import BaseHTTPMiddleware
+from datetime import datetime, timedelta
 
 app = FastAPI()
 
@@ -124,6 +128,35 @@ async def get_all_issues(token: str, session=Depends(get_session)):
     
     result = [Issues.to_dict(issue) for issue in issues]
 
+    return JSONResponse(content={"issues": result})
+
+@app.post("/get_auth_token", response_model=Token)
+def login_for_access_token(form_data: OAuth2PasswordRequestForm = Depends(), session=Depends(get_session)):
+    user = authenticate_user(session, form_data.username, form_data.password)
+    if not user:
+        raise HTTPException(status_code=400, detail="Incorrect username or password")
+    access_token = create_auth_access_token(
+        data={"sub": user.username},
+        expires_delta=timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
+    )
+    return {"access_token": access_token, "token_type": "bearer"}
+
+@app.get("/get_issues") #, response_model=List[Issue_in]
+def get_issues(current_user: User = Depends(get_current_user), session=Depends(get_session)):
+    
+    result = None
+    
+    try:
+        if current_user is not None:
+                          
+            issues = Issues.get_all_sorted_by_date(session)
+            
+            result = [Issues.to_dict(issue) for issue in issues]
+        
+    except Exception as e:
+        logging.error(f"Failed to fetch issues from external service: {e}")
+        raise HTTPException(status_code=502, detail="Failed to fetch issues from external service")
+    
     return JSONResponse(content={"issues": result})
 
 if __name__ == "__main__":    
