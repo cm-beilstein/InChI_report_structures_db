@@ -85,7 +85,7 @@ async def db_check(token: str):
     except Exception as ex:
         return JSONResponse(status_code=500, content={"db_status": "error", "details": str(ex)})
 
-@app.post("/ingest_issue")
+@app.post("/ingest_issue", tags=["ws"])
 async def ingest_issue(token: str, issue: Issue_in, session=Depends(get_session)):
     if token_check_enabled:
         if not is_token_valid(token, inspect.currentframe().f_code.co_name):
@@ -106,7 +106,7 @@ async def ingest_issue(token: str, issue: Issue_in, session=Depends(get_session)
     except Exception as e:
         return JSONResponse(status_code=500, content={"error": str(e)})
 
-@app.get("/get_nof_issues")
+@app.get("/get_nof_issues", tags=["ws"])
 async def get_nof_issues(token: str, session=Depends(get_session)):
 
     if token_check_enabled:
@@ -117,7 +117,7 @@ async def get_nof_issues(token: str, session=Depends(get_session)):
 
     return JSONResponse(content={"nof_issues": nof_issues})
 
-@app.get("/get_all_issues")
+@app.get("/get_all_issues", tags=["ws"])
 async def get_all_issues(token: str, session=Depends(get_session)):
     
     if token_check_enabled:
@@ -130,8 +130,8 @@ async def get_all_issues(token: str, session=Depends(get_session)):
 
     return JSONResponse(content={"issues": result})
 
-@app.post("/get_auth_token", response_model=Token)
-def login_for_access_token(form_data: OAuth2PasswordRequestForm = Depends(), session=Depends(get_session)):
+@app.post("/get_auth_token", response_model=Token, tags=["view"])
+async def login_for_access_token(form_data: OAuth2PasswordRequestForm = Depends(), session=Depends(get_session)):
     user = authenticate_user(session, form_data.username, form_data.password)
     if not user:
         raise HTTPException(status_code=400, detail="Incorrect username or password")
@@ -141,8 +141,8 @@ def login_for_access_token(form_data: OAuth2PasswordRequestForm = Depends(), ses
     )
     return {"access_token": access_token, "token_type": "bearer"}
 
-@app.get("/get_issues") #, response_model=List[Issue_in]
-def get_issues(current_user: User = Depends(get_current_user), session=Depends(get_session)):
+@app.get("/get_issues", tags=["view"]) 
+async def get_issues(current_user: User = Depends(get_current_user), session=Depends(get_session)):
     
     result = None
     
