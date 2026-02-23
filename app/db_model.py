@@ -122,7 +122,14 @@ class Issues(Base):
     
     @classmethod
     def to_dict(cls, issue):
-        return {c.key: getattr(issue, c.key) for c in inspect(issue).mapper.column_attrs}
+        result = {}
+        for c in inspect(issue).mapper.column_attrs:
+            value = getattr(issue, c.key)
+            if isinstance(value, datetime.datetime):
+                result[c.key] = value.isoformat()
+            else:
+                result[c.key] = value
+        return result
             
 
 class Issue_in(BaseModel):
