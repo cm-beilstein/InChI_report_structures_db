@@ -3,6 +3,7 @@ import datetime
 import json
 from sqlalchemy import create_engine, Column, Integer, Boolean, String, ForeignKey, DateTime, LargeBinary, text
 from sqlalchemy.orm import sessionmaker, declarative_base
+from sqlalchemy.inspection import inspect
 from pydantic import BaseModel
 from typing import Optional
 from config import settings
@@ -65,6 +66,7 @@ class Issues(Base):
     logs  = Column(String(2000), nullable=True) 
     options  = Column(String(2000), nullable=True) 
     inchi_version  = Column(String(255), nullable=True)     
+    deleted = Column(Boolean(), nullable=False)
 
     def __repr__(self):
         return f"<Issue(id='{self.id}', description='{self.description}', user='{self.user}')>"
@@ -83,7 +85,6 @@ class Issues(Base):
     @classmethod
     def example_json(cls):
         example = {
-            "id": 1,
             "user": "example_user",
             "description": "Example issue description",
             "date_created": "2025-01-01",
@@ -121,23 +122,8 @@ class Issues(Base):
     
     @classmethod
     def to_dict(cls, issue):
-
-        data = {
-            "id": issue.id,
-            "user": issue.user,
-            "description": issue.description,
-            "date_created": str(issue.date_created) if issue.date_created else None,
-            "molfile_v2": issue.molfile_v2,
-            "molfile_v3": issue.molfile_v3,
-            "inchi": issue.inchi,
-            "auxinfo": issue.auxinfo,
-            "inchikey": issue.inchikey,
-            "logs": issue.logs,
-            "options": issue.options,
-            "inchi_version": issue.inchi_version,
-            "input_source": issue.input_source
-        }
-        return data    
+        return {c.key: getattr(issue, c.key) for c in inspect(issue).mapper.column_attrs}
+            
 
 class Issue_in(BaseModel):
     user: Optional[str] = None
