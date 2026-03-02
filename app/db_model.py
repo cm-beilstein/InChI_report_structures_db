@@ -104,6 +104,7 @@ class Issues(Base):
     def add(cls, session, **kwargs):    
         try:
             issue = cls(**kwargs)
+            issue.deleted = False
             session.add(issue)
             session.commit()
             session.refresh(issue)
